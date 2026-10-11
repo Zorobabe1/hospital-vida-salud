@@ -8,8 +8,5 @@ class PacientesServiceApplicationTests {
 
     @Test
     void contextLoads() {
-        org.junit.jupiter.api.Assertions.fail(
-            "FALLO CONTROLADO PARA PRUEBA DE CI"
-        );
     }
 }
