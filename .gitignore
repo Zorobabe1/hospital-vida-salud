@@ -1,0 +1,22 @@
+
+# Eclipse y Spring Tools
+.metadata/
+.settings/
+.project
+.classpath
+.factorypath
+
+# Archivos compilados de Maven
+**/target/
+
+# Configuracion local y secretos
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
