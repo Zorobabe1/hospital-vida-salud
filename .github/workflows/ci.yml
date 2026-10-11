@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Compilar y probar microservicios
+    name: Compilar y probar (${{ matrix.service }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -22,6 +22,31 @@ jobs:
           - eureka-server
           - api-gateway
 
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hospital_vida_salud
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      rabbitmq:
+        image: rabbitmq:4-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -31,11 +56,20 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: maven
 
       - name: Instalar Maven
         run: sudo apt-get update && sudo apt-get install -y maven
 
+      - name: Crear base de datos de citas
+        if: matrix.service == 'citas-service'
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d postgres -c "CREATE DATABASE hospital_citas;"
+
       - name: Compilar y ejecutar pruebas
         working-directory: ${{ matrix.service }}
+        env:
+          DB_PASSWORD: postgres
+          RABBITMQ_USERNAME: guest
+          RABBITMQ_PASSWORD: guest
         run: mvn --batch-mode clean verify
